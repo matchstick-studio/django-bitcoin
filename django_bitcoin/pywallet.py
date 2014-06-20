@@ -29,7 +29,10 @@ import traceback
 import socket
 import types
 import string
-import exceptions
+
+if sys.version_info < (3, 0):
+    import exceptions
+
 import hashlib
 import random
 import math

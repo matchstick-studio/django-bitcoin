@@ -38,8 +38,8 @@ import sys
 try:
     import httplib
 except ImportError:
-    from http import client is httplib
-
+    from http import client as httplib
+    
 import base64
 import json
 import decimal

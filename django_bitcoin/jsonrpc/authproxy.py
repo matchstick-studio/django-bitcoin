@@ -35,11 +35,8 @@
 """
 
 import sys
-try:
-    import httplib
-except ImportError:
-    from http import client as httplib
-    
+import httplib
+
 import base64
 import json
 import decimal
@@ -70,10 +67,10 @@ class AuthServiceProxy(object):
         self.__authhdr = "Basic %s" % (base64.b64encode(authpair))
         if self.__url.scheme == 'https':
             self.__conn = httplib.HTTPSConnection(self.__url.hostname, port, None, None,False,
-                    HTTP_TIMEOUT)
+                    timeout=HTTP_TIMEOUT)
         else:
             self.__conn = httplib.HTTPConnection(self.__url.hostname, port, False,
-                    HTTP_TIMEOUT)
+                    timeout=HTTP_TIMEOUT)
 
     def __getattr__(self, name):
         if self.__serviceName != None:

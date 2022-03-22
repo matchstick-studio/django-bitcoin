@@ -25,7 +25,7 @@ setup(name='django-bitcoin',
       url='https://github.com/kangasbros/django-bitcoin',
       requires=["qrcode (>2.3.1)", "South (>0.7.4)"],
       license="MIT",
-      use_2to3 = True,
+      # use_2to3 = True,
       packages=packages,
       package_data=dict((package_name, template_patterns) for package_name in packages),
       )

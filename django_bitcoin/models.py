@@ -323,7 +323,7 @@ class BitcoinAddress(models.Model):
 
     def query_bitcoin_deposit(self, deposit_tx):
         if deposit_tx.transaction:
-            print "Already has a transaction!"
+            print ("Already has a transaction!")
             return
         with CacheLock('query_bitcoind'):
             r = bitcoind.total_received(self.address, minconf=settings.BITCOIN_MINIMUM_CONFIRMATIONS)
@@ -353,9 +353,9 @@ class BitcoinAddress(models.Model):
                         DepositTransaction.objects.select_for_update().filter(id=deposit_tx.id).update(transaction=wt)
                     self.wallet.update_last_balance(deposit_tx.amount)
                 else:
-                    print "transaction not updated!"
+                    print ("transaction not updated!")
             else:
-                print "This path should not occur, but whatever."
+                print ("This path should not occur, but whatever.")
                 # raise Exception("Should be never this way")
             return r
 
@@ -394,7 +394,7 @@ def new_bitcoin_address():
         if len(bp) < 1:
             refill_payment_queue()
             db_transaction.commit()
-            print "refilling queue...", bp
+            print ("refilling queue...", bp)
         else:
             bp = bp[0]
             updated = BitcoinAddress.objects.select_for_update().filter(Q(id=bp.id) & Q(active=False) & Q(wallet__isnull=True) & \
@@ -404,7 +404,7 @@ def new_bitcoin_address():
                 db_transaction.set_autocommit(True)
                 return bp
             else:
-                print "wallet transaction concurrency:", bp.address
+                print ("wallet transaction concurrency:", bp.address)
 
 
 class Payment(models.Model):
@@ -464,7 +464,7 @@ class Payment(models.Model):
     def withdraw_proportion_all(cls, address, bitcoin_payments_proportions):
         """hash BitcoinPayment -> Proportion"""
         final_amount=Decimal("0.0")
-        print bitcoin_payments_proportions
+        print (bitcoin_payments_proportions)
         for bp, proportion in bitcoin_payments_proportions.iteritems():
             am=bp.calculate_amount(proportion)
             final_amount+=am
@@ -531,7 +531,7 @@ class Payment(models.Model):
 
     def update_payment(self, minconf=1):
         new_amount=Decimal(bitcoin_getbalance(self.address, minconf=minconf))
-        print "blaa", new_amount, self.address
+        print ("blaa", new_amount, self.address)
         if new_amount>=self.amount:
             self.amount_paid=new_amount
             self.paid_at=datetime.datetime.now()
@@ -668,7 +668,7 @@ class Wallet(models.Model):
             addr = new_bitcoin_address()
             updated = BitcoinAddress.objects.select_for_update().filter(Q(id=addr.id) & Q(active=True) & Q(least_received__lte=0) & Q(wallet__isnull=True))\
                           .update(active=True, wallet=self)
-            print "addr_id", addr.id, updated
+            print ("addr_id", addr.id, updated)
             # db_transaction.commit()
             if updated:
                 return addr.address
@@ -708,7 +708,7 @@ class Wallet(models.Model):
                 Q(last_balance=avail))\
               .update(last_balance=new_balance, transaction_counter=self.transaction_counter+1)
             if not updated:
-                print "wallet transaction concurrency:", new_balance, avail, self.transaction_counter, self.last_balance, self.total_balance()
+                print ("wallet transaction concurrency:", new_balance, avail, self.transaction_counter, self.last_balance, self.total_balance())
                 raise Exception(_("Concurrency error with transactions. Please try again."))
             # db_transaction.commit()
             # concurrency check end
@@ -761,7 +761,7 @@ class Wallet(models.Model):
                 Q(last_balance=avail) )\
               .update(last_balance=new_balance, transaction_counter=self.transaction_counter+1)
             if not updated:
-                print "address transaction concurrency:", new_balance, avail, self.transaction_counter, self.last_balance, self.total_balance()
+                print ("address transaction concurrency:", new_balance, avail, self.transaction_counter, self.last_balance, self.total_balance())
                 raise Exception(_("Concurrency error with transactions. Please try again."))
             # concurrency check end
             outgoing_transaction = OutgoingTransaction.objects.create(amount=amount, to_bitcoinaddress=address,
@@ -1014,8 +1014,8 @@ def update_payments():
     for bp in bps:
         bp.amount_paid=Decimal(bitcoin_getbalance(bp.address))
         bp.save()
-        print bp.amount
-        print bp.amount_paid
+        print (bp.amount)
+        print (bp.amount_paid)
 
 @transaction.commit_on_success
 def new_bitcoin_payment(amount):
@@ -1036,7 +1036,7 @@ def getNewBitcoinPayment(amount):
 
 @transaction.commit_on_success
 def new_bitcoin_payment_eur(amount):
-    print bitcoinprice_eur()
+    print (bitcoinprice_eur())
     return new_bitcoin_payment(Decimal(amount)/Decimal(bitcoinprice_eur()['24h']))
 
 def getNewBitcoinPayment_eur(amount):
@@ -1078,7 +1078,7 @@ def set_historical_price(curr="EUR"):
     price = sum([m['avg'] for m in markets_currency]) / len(markets_currency)
     hp = HistoricalPrice.objects.create(price=Decimal(str(price)), params=",".join([m['symbol']+"_avg" for m in markets_currency]), currency=curr,
             created_at=datetime.datetime.now())
-    print "Created new",hp
+    print ("Created new",hp)
     return hp
 
 def get_historical_price_object(dt=None, curr="EUR"):
